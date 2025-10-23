@@ -1,0 +1,73 @@
+==============================================================
+Function
+==============================================================
+
+function functionName(%arg){}
+
+function ClassName::FunctionName(%arg){}
+
+--------------------------------------------------------------
+
+(source_file
+  (function
+    (function_identifier
+      (name))
+    (parenthesized_expressions
+      (variable
+        (variable_identifier))))
+  (function
+    (function_identifier
+      (name)
+      (name))
+    (parenthesized_expressions
+      (variable
+        (variable_identifier)))))
+
+==============================================================
+Package
+==============================================================
+
+package myPackage
+{
+  function myFunction(%arg){}
+
+  function myClass::myFunciton(%arg){}
+};
+
+--------------------------------------------------------------
+
+(source_file
+  (package
+    (name)
+    (function
+      (function_identifier
+        (name))
+      (parenthesized_expressions
+        (variable
+          (variable_identifier))))
+    (function
+      (function_identifier
+        (name)
+        (name))
+      (parenthesized_expressions
+        (variable
+          (variable_identifier))))))
+
+==============================================================
+Datablock
+==============================================================
+
+datablock PlayerData(MyPlayer : Armor)
+{
+  blah = 100;
+};
+
+--------------------------------------------------------------
+
+(source_file
+  (datablock
+    (name)
+    (name)
+    (name)
+    (name)
+    (number)))

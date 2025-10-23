@@ -31,47 +31,44 @@
 
 (comment) @comment
 
-(function_definition "function" @keyword.function)
-(function_definition name: (name) @function)
-(function_definition namespace: (name) @type)
+(function_identifier class: (identifier) @type)
+(function_identifier name: (identifier) @function)
 
 [ "("
   ")"
   "{"
   "}"
+  "]"
+  "["
+  ";"
 ] @punctuation.bracket
 
-[ ";"
-  "."
-  ","
-] @punctuation.delimiter
+"," @punctuation.delimiter
 
-[ "["
-  "]"
-] @punctuation.special
-
-(local_variable) @variable
-(global_variable) @variable
-(object_field name: (name) @property)
+(parenthesized_variables (variable) @variable.parameter)
+(expression/variable) @variable
+(assignment_expression (variable) @variable)
+(variable "$" @operator) 
+(variable "%" @operator)
+(field name: (identifier) @variable.member)
+(object_name) @type
 
 (number) @number
 
-(string_literal) @string
-(tagged_string_literal) @string
+(string) @string
+(tagged_string) @string
 
-(markup) @tag
-(escape_sequence) @tag
+(markup) @string.special
+(tag) @string.special
+(escape_sequence) @string.escape
 
-(function name: (name) @function.call)
-(function namespace: (name) @type)
+(new_expression (identifier) @type)
 
-(method name: (name) @function.method.call)
-
-(new name: (name) @type)
-
-[ (boolean_false)
- (boolean_true)
+[ (false)
+ (true)
 ] @boolean
+
+"function" @keyword.function
 
 [ "while"
   "for"

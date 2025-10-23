@@ -7,341 +7,352 @@
 /// <reference types="tree-sitter-cli/dsl" />
 // @ts-check
 
+const PREC = {
+  OR: 1, // or
+  AND: 2, // and
+  NOT: 3,
+  COMPARE: 4, // < > <= >= ~= ==
+  STRING: 5,
+  BIT_OR: 6, // |
+  BIT_XOR: 7, // ~
+  BIT_AND: 8, // &
+  BIT_SHIFT: 9, // << >>
+  BIT_COMP: 10,
+  ADD: 12, // + -
+  MULT: 13, // * / // %
+  ASSIGN: 14,
+};
+
 module.exports = grammar({
   name: "torquescript",
 
-  extras: ($) => [$.comment, /\s*/],
+  extras: ($) => [$.comment, /\s/],
   word: ($) => $.identifier,
 
+  supertypes: ($) => [$.expression],
+
   rules: {
-    source_file: ($) =>
-      repeat(choice($._statement, $._definition, $._declaration)),
+    source_file: ($) => repeat(choice($._statement, $._definition)),
 
-    _definition: ($) => choice($.function_definition),
+    _statement_block: ($) => seq("{", repeat($._statement), "}"),
 
-    function_definition: ($) =>
-      seq(
-        "function",
-        optional(seq(field("namespace", $.name), "::")),
-        field("name", $.name),
-        $.parameter_list,
-        $.block,
-      ),
-
-    parameter_list: ($) =>
-      seq(
-        "(",
-        optional($.local_variable),
-        repeat(seq(",", $.local_variable)),
-        ")",
-      ),
-
-    block: ($) => seq("{", repeat($._statement), "}"),
-
-    _declaration: ($) =>
-      seq(choice($.package_declaration, $.datablock_declaration), ";"),
-
-    package_declaration: ($) =>
-      seq("package", $.name, "{", repeat($._definition), "}"),
-
-    datablock_declaration: ($) =>
-      seq(
-        "datablock",
-        $.name,
-        "(",
-        $.name,
-        optional(seq(":", $.name)),
-        ")",
-        $.field_block,
-      ),
-
-    field_block: ($) => seq("{", repeat($.field), "}"),
-
-    field: ($) => seq($.name, optional($.array), "=", $._expression, ";"),
-
-    _statement: ($) =>
-      seq(
-        choice(
-          $.return_statement,
-          $.break_statement,
-          $.continue_statement,
-          $.switch_statement,
-          $.switch$_statement,
-          $.for_statement,
-          $.while_statement,
-          $.if_statement,
-          seq(
-            choice(
-              $.assignment,
-              $.function,
-              $.method,
-              $.auto_assignment,
-              $.new,
-            ),
-            ";",
-          ),
-        ),
-      ),
-
-    break_statement: ($) => seq("break", ";"),
-
-    continue_statement: ($) => seq("continue", ";"),
-
-    return_statement: ($) => seq("return", optional($._expression), ";"),
-
-    switch_statement: ($) =>
-      seq("switch", "(", $._expression, ")", $.switch_block),
-
-    switch$_statement: ($) =>
-      seq("switch$", "(", $._expression, ")", $.switch_block),
-
-    switch_block: ($) =>
+    _field_block: ($) =>
       seq(
         "{",
-        repeat(
-          seq(
-            "case",
-            $._expression,
-            repeat(seq(choice("or", "and"), $._expression)),
-            ":",
-            repeat($._statement),
-          ),
-        ),
-        optional(seq("default", ":", repeat($._statement))),
+        repeat(seq($.identifier, optional($.array), "=", $.expression, ";")),
         "}",
       ),
 
-    for_statement: ($) =>
-      seq(
-        "for",
-        "(",
-        $._expression,
-        ";",
-        $._expression,
-        ";",
-        $._expression,
-        ")",
-        optional($.block),
+    _optional_bracket_block: ($) => choice($._statement, $._statement_block),
+
+    _statement: ($) =>
+      choice(
+        $.case_statement,
+        $.assignment_statement,
+        $.continue_statement,
+        $.break_statement,
+        $.return_statement,
+        $.switch_statement,
+        $.switch$_statement,
+        $.for_statement,
+        $.while_statement,
+        $.if_statement,
+        $.new_statement,
+        $.function_call_statement,
+        $.method_call_statement,
       ),
 
-    while_statement: ($) => seq("while", $.expression_block),
+    case_statement: ($) =>
+      prec.right(
+        seq(
+          choice(seq("case", $.expression), "default"),
+          ":",
+          repeat($._statement),
+        ),
+      ),
+
+    return_statement: ($) => seq("return", optional($.expression), ";"),
+
+    continue_statement: ($) => seq("continue", ";"),
+
+    break_statement: ($) => seq("break", ";"),
+
+    parenthesized_expression: ($) => seq("(", optional($.expression), ")"),
+
+    parenthesized_variables: ($) =>
+      seq("(", repeat(seq($.variable, ",")), optional($.variable), ")"),
+
+    parenthesized_expressions: ($) =>
+      seq("(", repeat(seq($.expression, ",")), optional($.expression), ")"),
+
+    switch_statement: ($) =>
+      seq("switch", $.parenthesized_expression, optional($._statement_block)),
+
+    switch$_statement: ($) =>
+      seq("switch$", $.parenthesized_expression, optional($._statement_block)),
+
+    function_call_statement: ($) => seq($.function_call_expression, ";"),
+
+    method_call_statement: ($) => seq($.method_call_expression, ";"),
+
+    for_statement: ($) =>
+      prec.right(
+        seq(
+          "for",
+          "(",
+          $.expression,
+          ";",
+          $.expression,
+          ";",
+          $.expression,
+          ")",
+          optional($._optional_bracket_block),
+        ),
+      ),
+
+    while_statement: ($) =>
+      prec.right(
+        seq(
+          "while",
+          $.parenthesized_expression,
+          optional($._optional_bracket_block),
+        ),
+      ),
 
     if_statement: ($) =>
       prec.right(
         seq(
           "if",
-          $.expression_block,
-          optional(seq("else", choice($.block, $._statement))),
+          $.parenthesized_expression,
+          optional($._optional_bracket_block),
+          optional($.else_statement),
         ),
       ),
 
-    expression_block: ($) =>
-      seq("(", $._expression, ")", choice($.block, $._statement)),
+    else_statement: ($) =>
+      prec.right(seq("else", optional($._optional_bracket_block))),
 
-    _expression: ($) =>
-      prec.left(
-        choice(
-          $.boolean_false,
-          $.boolean_true,
-          $.name,
-          $.number,
-          $.string_literal,
-          $.tagged_string_literal,
-          $.local_variable,
-          $.global_variable,
-          $.object_field,
-          $.assignment,
-          $.auto_assignment,
-          $.function,
-          $.method,
-          $.new,
-          $.conditional,
-          $.grouping,
-          $.binary_expression,
-          $.unary_expression,
-        ),
-      ),
+    new_statement: ($) => seq($.new_expression, ";"),
 
-    binary_expression: ($) => {
-      const table = [
-        ["+"],
-        ["-"],
-        ["*"],
-        ["/"],
-        ["%"],
-        ["||"],
-        ["&&"],
-        ["|"],
-        ["^"],
-        ["&"],
-        ["=="],
-        ["!="],
-        [">"],
-        [">="],
-        ["<="],
-        ["<"],
-        ["<<"],
-        [">>"],
-        ["@"],
-        ["NL"],
-        ["TAB"],
-        ["SPC"],
-        ["$="],
-        ["!$="],
-      ];
+    assignment_statement: ($) => seq($.assignment_expression, ";"),
 
-      return choice(
-        ...table.map(([operator]) => {
-          return prec.left(
-            seq(
-              field("left", $._expression),
-              // @ts-ignore
-              field("operator", operator),
-              field("right", $._expression),
-            ),
-          );
-        }),
-      );
-    },
-
-    unary_expression: ($) => {
-      const table = [["-"], ["!"], ["~"]];
-
-      return choice(
-        ...table.map(([operator]) => {
-          return prec.right(
-            seq(field("operator", operator), field("right", $._expression)),
-          );
-        }),
-      );
-    },
-
-    grouping: ($) => seq("(", $._expression, ")"),
-
-    conditional: ($) =>
-      prec.right(
-        seq(
-          field("left", $._expression),
-          "?",
-          field("right", $._expression),
-          optional(seq(":", field("else", $._expression))),
-        ),
-      ),
-
-    assignment: ($) => {
-      const table = [
-        ["="],
-        ["*="],
-        ["/="],
-        ["%="],
-        ["+="],
-        ["-="],
-        ["&="],
-        ["|="],
-        ["^"],
-        [">>="],
-        ["<<="],
-      ];
-
-      return choice(
-        ...table.map(([operator]) => {
-          return prec.right(
-            seq(
-              field(
-                "left",
-                choice($.local_variable, $.global_variable, $.object_field),
-              ),
-              // @ts-ignore
-              field("operator", operator),
-              field("right", $._expression),
-            ),
-          );
-        }),
-      );
-    },
-
-    auto_assignment: ($) => {
-      const table = [["++"], ["--"]];
-
-      return choice(
-        ...table.map(([operator]) => {
-          return prec.right(
-            seq(
-              field(
-                "left",
-                choice($.local_variable, $.global_variable, $.object_field),
-              ),
-              // @ts-ignore
-              field("operator", operator),
-            ),
-          );
-        }),
-      );
-    },
+    _definition: ($) => choice($.function, $.datablock, $.package),
 
     function: ($) =>
-      prec(
-        2,
-        seq(
-          optional(seq(field("namespace", $.name), "::")),
-          field("name", $.name),
-          $.argument_list,
+      seq(
+        "function",
+        $.function_identifier,
+        $.parenthesized_variables,
+        optional($._statement_block),
+      ),
+
+    datablock: ($) =>
+      seq(
+        "datablock",
+        field("type", $.identifier),
+        "(",
+        field("name", $.identifier),
+        optional(seq(":", field("inherit", $.identifier))),
+        ")",
+        optional($._field_block),
+        ";",
+      ),
+
+    package: ($) =>
+      seq(
+        "package",
+        field("name", $.identifier),
+        optional(seq("{", repeat($.function), "}", ";")),
+      ),
+
+    expression: ($) =>
+      choice(
+        $.true,
+        $.false,
+        $.number,
+        $.string,
+        $.tagged_string,
+        $.array,
+        $.variable,
+        $.function_call_expression,
+        $.field,
+        $.method_call_expression,
+        $.new_expression,
+        $.binary_expression,
+        $.unary_expression,
+        $.assignment_expression,
+        $.grouping,
+        $.conditional,
+        $.variable,
+        alias($.identifier, $.object_name),
+      ),
+
+    true: ($) => /true/i,
+
+    false: ($) => /false/i,
+
+    binary_expression: ($) =>
+      choice(
+        ...[
+          ["@", PREC.STRING],
+          ["TAB", PREC.STRING],
+          ["SPC", PREC.STRING],
+          ["NL", PREC.STRING],
+          ["*", PREC.MULT],
+          ["/", PREC.MULT],
+          ["%", PREC.MULT],
+          ["+", PREC.ADD],
+          ["-", PREC.ADD],
+          ["<", PREC.COMPARE],
+          [">", PREC.COMPARE],
+          ["<=", PREC.COMPARE],
+          [">=", PREC.COMPARE],
+          ["==", PREC.COMPARE],
+          ["!=", PREC.COMPARE],
+          ["$=", PREC.COMPARE],
+          ["!$=", PREC.COMPARE],
+          ["&&", PREC.AND],
+          ["and", PREC.AND],
+          ["||", PREC.OR],
+          ["or", PREC.OR],
+          ["&", PREC.BIT_AND],
+          ["|", PREC.BIT_OR],
+          ["^", PREC.BIT_XOR],
+          ["<<", PREC.BIT_SHIFT],
+          [">>", PREC.BIT_SHIFT],
+        ].map(([operator, precedence]) =>
+          prec.left(
+            precedence,
+            seq(
+              field("left", $.expression),
+              operator,
+              field("right", $.expression),
+            ),
+          ),
         ),
       ),
 
-    method: ($) =>
-      seq($._expression, ".", field("name", $.name), $.argument_list),
-
-    argument_list: ($) =>
-      seq("(", optional($._expression), repeat(seq(",", $._expression)), ")"),
-
-    new: ($) =>
-      seq(
-        "new",
-        field("name", $.name),
-        "(",
-        optional($._expression),
-        ")",
-        optional($.field_block),
+    unary_expression: ($) =>
+      choice(
+        ...[
+          ["~", PREC.BIT_COMP],
+          ["!", PREC.NOT],
+          ["-", PREC.ADD],
+        ].map(([operator, precedence]) =>
+          prec.right(precedence, seq(operator, field("right", $.expression))),
+        ),
       ),
 
-    local_variable: ($) => seq("%", field("name", $.name), optional($.array)),
+    assignment_expression: ($) =>
+      prec.right(
+        seq(
+          choice($.variable, $.field),
+          choice(
+            seq(
+              choice(
+                "=",
+                "-=",
+                "*=",
+                "/=",
+                "%=",
+                "+=",
+                "&=",
+                "|=",
+                "^=",
+                "<<=",
+                ">>=",
+              ),
+              $.expression,
+            ),
+            choice("++", "--"),
+          ),
+        ),
+      ),
 
-    global_variable: ($) =>
+    method_call_expression: ($) =>
       seq(
-        "$",
-        field("name", $.name),
-        repeat(seq("::", $.name)),
+        $.expression,
+        ".",
+        $.function_identifier,
+        $.parenthesized_expressions,
+      ),
+
+    function_call_expression: ($) =>
+      seq($.function_identifier, $.parenthesized_expressions),
+
+    array: ($) =>
+      seq("[", repeat(seq($.expression, ",")), optional($.expression), "]"),
+
+    field: ($) =>
+      prec(
+        1,
+        seq($.expression, ".", field("name", $.identifier), optional($.array)),
+      ),
+
+    variable: ($) =>
+      seq(
+        choice("$", "%"),
+        field("name", $.variable_identifier),
         optional($.array),
       ),
 
-    object_field: ($) =>
-      seq($._expression, ".", field("name", $.name), optional($.array)),
+    new_expression: ($) =>
+      seq(
+        "new",
+        field("type", $.identifier),
+        "(",
+        optional($.expression),
+        ")",
+        optional($._field_block),
+      ),
 
-    array: ($) => seq("[", $._expression, repeat(seq(",", $._expression)), "]"),
+    number: ($) =>
+      token(choice(/\d+/, /\d+\.\d+/, /\d+\.\d+E\-\d+/, /0x[0-9&&a-f]+/)),
 
-    number: ($) => choice(/\d+/, /\d+\.\d+/, /\d+\.\d+E\-\d+/, /0x[0-9&&a-f]+/),
+    grouping: ($) => seq("(", $.expression, ")"),
 
-    string_literal: ($) =>
+    conditional: ($) =>
+      prec.left(
+        seq(
+          field("test", $.expression),
+          "?",
+          field("true", $.expression),
+          ":",
+          field("false", $.expression),
+        ),
+      ),
+
+    string: ($) =>
       seq(
         '"',
         repeat(
           choice(
-            alias(token.immediate(/[^\\"\n]+/), $.string_content),
+            alias(
+              token.immediate(
+                choice(
+                  "%",
+                  seq("%", /[^0-9\\"\n<>%][^\\"\n<>%]+/),
+                  seq("<", /[^\\"\n<>%]*/),
+                  seq(">", /[^\\"\n<>%]*/),
+                  /[^\\"\n<>%]+/,
+                ),
+              ),
+              $.content,
+            ),
             $.markup,
             $.escape_sequence,
+            $.tag,
           ),
         ),
         '"',
       ),
 
-    tagged_string_literal: ($) =>
+    tagged_string: ($) =>
       seq(
         "'",
         repeat(
           choice(
-            alias(token.immediate(/[^\\'\n]+/), $.string_content),
-            $.markup,
+            alias(token.immediate(/[^\\'\n]+/), $.content),
             $.escape_sequence,
           ),
         ),
@@ -351,48 +362,20 @@ module.exports = grammar({
     escape_sequence: ($) =>
       token(prec(1, seq("\\", choice(/[^cx]/, /c[rpo0-9]/, /x[a-z]{2}/)))),
 
-    markup: ($) =>
-      token(
-        seq(
-          "<",
-          choice(
-            "font",
-            "color",
-            "shadow",
-            "shadowcolor",
-            "just",
-            "clip",
-            "lmargin%",
-            "rmargin%",
-            "lmargin",
-            "rmargin",
-            "a",
-            "/a",
-            "linkcolor",
-            "bitmap",
-            "tab",
-            "spush",
-            "spop",
-            "sbreak",
-            "br",
-            "div",
-            "tag",
-          ),
-          /.+/,
-          ">",
-        ),
+    markup: ($) => token(/<[^<>]*>/),
+
+    tag: ($) => token(/%[0-9]/),
+
+    identifier: ($) => /[a-z_][a-z0-9_]*/i,
+
+    variable_identifier: ($) => /[a-z_][a-z0-9_:]*/i,
+
+    function_identifier: ($) =>
+      seq(
+        optional(seq(field("class", $.identifier), "::")),
+        field("name", $.identifier),
       ),
 
-    identifier: ($) => /[a-z]*/,
-
-    boolean_true: ($) => token(/true/i),
-
-    boolean_false: ($) => token(/false/i),
-
-    parent: ($) => /parent/i,
-
-    name: ($) => /[a-z_][a-z0-9_]*/i,
-
-    comment: ($) => /\/\/.*/,
+    comment: ($) => seq("//", /.*/),
   },
 });
