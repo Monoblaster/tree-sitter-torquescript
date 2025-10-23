@@ -299,15 +299,11 @@
       }
     },
     "children": {
-      "multiple": true,
+      "multiple": false,
       "required": false,
       "types": [
         {
-          "type": "expression",
-          "named": true
-        },
-        {
-          "type": "identifier",
+          "type": "field_block",
           "named": true
         }
       ]
@@ -394,6 +390,32 @@
     "children": {
       "multiple": true,
       "required": true,
+      "types": [
+        {
+          "type": "expression",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "field_block",
+    "named": true,
+    "fields": {
+      "name": {
+        "multiple": true,
+        "required": false,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": true,
+      "required": false,
       "types": [
         {
           "type": "expression",
@@ -748,7 +770,7 @@
           "named": true
         },
         {
-          "type": "identifier",
+          "type": "field_block",
           "named": true
         }
       ]

@@ -36,10 +36,18 @@ module.exports = grammar({
 
     _statement_block: ($) => seq("{", repeat($._statement), "}"),
 
-    _field_block: ($) =>
+    field_block: ($) =>
       seq(
         "{",
-        repeat(seq($.identifier, optional($.array), "=", $.expression, ";")),
+        repeat(
+          seq(
+            field("name", $.identifier),
+            optional($.array),
+            "=",
+            $.expression,
+            ";",
+          ),
+        ),
         "}",
       ),
 
@@ -154,7 +162,7 @@ module.exports = grammar({
         field("name", $.identifier),
         optional(seq(":", field("inherit", $.identifier))),
         ")",
-        optional($._field_block),
+        optional($.field_block),
         ";",
       ),
 
@@ -303,7 +311,7 @@ module.exports = grammar({
         "(",
         optional($.expression),
         ")",
-        optional($._field_block),
+        optional($.field_block),
       ),
 
     number: ($) =>

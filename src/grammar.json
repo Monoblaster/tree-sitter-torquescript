@@ -39,7 +39,7 @@
         }
       ]
     },
-    "_field_block": {
+    "field_block": {
       "type": "SEQ",
       "members": [
         {
@@ -52,8 +52,12 @@
             "type": "SEQ",
             "members": [
               {
-                "type": "SYMBOL",
-                "name": "identifier"
+                "type": "FIELD",
+                "name": "name",
+                "content": {
+                  "type": "SYMBOL",
+                  "name": "identifier"
+                }
               },
               {
                 "type": "CHOICE",
@@ -715,7 +719,7 @@
           "members": [
             {
               "type": "SYMBOL",
-              "name": "_field_block"
+              "name": "field_block"
             },
             {
               "type": "BLANK"
@@ -1984,7 +1988,7 @@
           "members": [
             {
               "type": "SYMBOL",
-              "name": "_field_block"
+              "name": "field_block"
             },
             {
               "type": "BLANK"
