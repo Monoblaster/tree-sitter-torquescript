@@ -2185,8 +2185,56 @@
                 "content": {
                   "type": "IMMEDIATE_TOKEN",
                   "content": {
-                    "type": "PATTERN",
-                    "value": "[^\\\\'\\n]+"
+                    "type": "CHOICE",
+                    "members": [
+                      {
+                        "type": "STRING",
+                        "value": "%"
+                      },
+                      {
+                        "type": "SEQ",
+                        "members": [
+                          {
+                            "type": "STRING",
+                            "value": "%"
+                          },
+                          {
+                            "type": "PATTERN",
+                            "value": "[^0-9\\\\'\\n<>%][^\\\\\"\\n<>%]+"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "SEQ",
+                        "members": [
+                          {
+                            "type": "STRING",
+                            "value": "<"
+                          },
+                          {
+                            "type": "PATTERN",
+                            "value": "[^\\\\'\\n<>%]*"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "SEQ",
+                        "members": [
+                          {
+                            "type": "STRING",
+                            "value": ">"
+                          },
+                          {
+                            "type": "PATTERN",
+                            "value": "[^\\\\'\\n<>%]*"
+                          }
+                        ]
+                      },
+                      {
+                        "type": "PATTERN",
+                        "value": "[^\\\\'\\n<>%]+"
+                      }
+                    ]
                   }
                 },
                 "named": true,
@@ -2194,7 +2242,15 @@
               },
               {
                 "type": "SYMBOL",
+                "name": "markup"
+              },
+              {
+                "type": "SYMBOL",
                 "name": "escape_sequence"
+              },
+              {
+                "type": "SYMBOL",
+                "name": "tag"
               }
             ]
           }

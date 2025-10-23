@@ -1858,7 +1858,7 @@ function serverCmdSlay(%client, %a1,%a2,%a3,%a4,%a5,%a6,%a7,%a8,%a9,%a10,%a11,%a
 		}
 	}
 
-	%message = '\c3%1\c6 has slain \c3%2\c6.';
+	%message = '\c3%1\c6%1 has slain \c3%2\c6.';
 	if(%amount > 0)
 	{
 		%message = '\c3%1\c6 has slain \c3%2 \c6for \c2%3 \c4Rounds\c6.';

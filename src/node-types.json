@@ -1107,6 +1107,14 @@
         {
           "type": "escape_sequence",
           "named": true
+        },
+        {
+          "type": "markup",
+          "named": true
+        },
+        {
+          "type": "tag",
+          "named": true
         }
       ]
     }

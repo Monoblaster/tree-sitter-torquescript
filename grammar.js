@@ -352,8 +352,21 @@ module.exports = grammar({
         "'",
         repeat(
           choice(
-            alias(token.immediate(/[^\\'\n]+/), $.content),
+            alias(
+              token.immediate(
+                choice(
+                  "%",
+                  seq("%", /[^0-9\\'\n<>%][^\\"\n<>%]+/),
+                  seq("<", /[^\\'\n<>%]*/),
+                  seq(">", /[^\\'\n<>%]*/),
+                  /[^\\'\n<>%]+/,
+                ),
+              ),
+              $.content,
+            ),
+            $.markup,
             $.escape_sequence,
+            $.tag,
           ),
         ),
         "'",
