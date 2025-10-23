@@ -391,20 +391,22 @@ module.exports = grammar({
     escape_sequence: ($) =>
       token(prec(1, seq("\\", choice(/[^cx]/, /c[rpo0-9]/, /x[a-z]{2}/)))),
 
-    markup: ($) => token(/<[^<>]*>/),
+    markup: ($) => token(/<[^<>"']*>/),
 
     tag: ($) => token(/%[0-9]/),
 
-    identifier: ($) => /[a-z_][a-z0-9_]*/i,
-
     variable_identifier: ($) => /[a-z_][a-z0-9_:]*/i,
+
+    parent: ($) => token(/parent/i),
 
     function_identifier: ($) =>
       seq(
-        optional(seq(field("class", $.identifier), "::")),
+        optional(seq(field("class", choice($.parent, $.identifier)), "::")),
         field("name", $.identifier),
       ),
 
     comment: ($) => seq("//", /.*/),
+
+    identifier: ($) => /[a-z_][a-z0-9_]*/i,
   },
 });

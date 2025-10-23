@@ -43,6 +43,7 @@
 "," @punctuation.delimiter
 
 (function_identifier class: (identifier) @type)
+(function_identifier class: (parent) @keyword)
 (function_identifier name: (identifier) @function)
 
 (parenthesized_variables (variable) @variable.parameter)

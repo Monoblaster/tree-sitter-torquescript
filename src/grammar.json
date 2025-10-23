@@ -2337,7 +2337,7 @@
       "type": "TOKEN",
       "content": {
         "type": "PATTERN",
-        "value": "<[^<>]*>"
+        "value": "<[^<>\"']*>"
       }
     },
     "tag": {
@@ -2347,15 +2347,18 @@
         "value": "%[0-9]"
       }
     },
-    "identifier": {
-      "type": "PATTERN",
-      "value": "[a-z_][a-z0-9_]*",
-      "flags": "i"
-    },
     "variable_identifier": {
       "type": "PATTERN",
       "value": "[a-z_][a-z0-9_:]*",
       "flags": "i"
+    },
+    "parent": {
+      "type": "TOKEN",
+      "content": {
+        "type": "PATTERN",
+        "value": "parent",
+        "flags": "i"
+      }
     },
     "function_identifier": {
       "type": "SEQ",
@@ -2370,8 +2373,17 @@
                   "type": "FIELD",
                   "name": "class",
                   "content": {
-                    "type": "SYMBOL",
-                    "name": "identifier"
+                    "type": "CHOICE",
+                    "members": [
+                      {
+                        "type": "SYMBOL",
+                        "name": "parent"
+                      },
+                      {
+                        "type": "SYMBOL",
+                        "name": "identifier"
+                      }
+                    ]
                   }
                 },
                 {
@@ -2407,6 +2419,11 @@
           "value": ".*"
         }
       ]
+    },
+    "identifier": {
+      "type": "PATTERN",
+      "value": "[a-z_][a-z0-9_]*",
+      "flags": "i"
     }
   },
   "extras": [

@@ -619,6 +619,10 @@
           {
             "type": "identifier",
             "named": true
+          },
+          {
+            "type": "parent",
+            "named": true
           }
         ]
       },
@@ -1545,6 +1549,10 @@
   {
     "type": "package",
     "named": false
+  },
+  {
+    "type": "parent",
+    "named": true
   },
   {
     "type": "return",
