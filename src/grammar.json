@@ -55,8 +55,43 @@
                 "type": "FIELD",
                 "name": "name",
                 "content": {
-                  "type": "SYMBOL",
-                  "name": "identifier"
+                  "type": "CHOICE",
+                  "members": [
+                    {
+                      "type": "ALIAS",
+                      "content": {
+                        "type": "PATTERN",
+                        "value": "class",
+                        "flags": "i"
+                      },
+                      "named": true,
+                      "value": "class"
+                    },
+                    {
+                      "type": "ALIAS",
+                      "content": {
+                        "type": "PATTERN",
+                        "value": "superclass",
+                        "flags": "i"
+                      },
+                      "named": true,
+                      "value": "superclass"
+                    },
+                    {
+                      "type": "ALIAS",
+                      "content": {
+                        "type": "PATTERN",
+                        "value": "classname",
+                        "flags": "i"
+                      },
+                      "named": true,
+                      "value": "classname"
+                    },
+                    {
+                      "type": "SYMBOL",
+                      "name": "identifier"
+                    }
+                  ]
                 }
               },
               {

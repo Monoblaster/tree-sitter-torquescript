@@ -41,7 +41,15 @@ module.exports = grammar({
         "{",
         repeat(
           seq(
-            field("name", $.identifier),
+            field(
+              "name",
+              choice(
+                alias(/class/i, $.class),
+                alias(/superclass/i, $.superclass),
+                alias(/classname/i, $.classname),
+                $.identifier,
+              ),
+            ),
             optional($.array),
             "=",
             $.expression,

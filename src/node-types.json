@@ -407,7 +407,19 @@
         "required": false,
         "types": [
           {
+            "type": "class",
+            "named": true
+          },
+          {
+            "type": "classname",
+            "named": true
+          },
+          {
             "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "superclass",
             "named": true
           }
         ]
@@ -1459,6 +1471,14 @@
     "named": false
   },
   {
+    "type": "class",
+    "named": true
+  },
+  {
+    "type": "classname",
+    "named": true
+  },
+  {
     "type": "content",
     "named": true
   },
@@ -1529,6 +1549,10 @@
   {
     "type": "return",
     "named": false
+  },
+  {
+    "type": "superclass",
+    "named": true
   },
   {
     "type": "switch",

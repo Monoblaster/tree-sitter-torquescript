@@ -72,6 +72,8 @@
  (true)
 ] @boolean
 
+(field_block name: [(class) (superclass) (classname)] @variable.builtin)
+
 "function" @keyword.function
 
 [ "while"
@@ -85,6 +87,10 @@
 
 [ "if"
   "else"
+  "switch"
+  "switch$"
+  "case"
+  "default"
 ] @keyword.conditional
 
 (conditional "?" @keyword.conditional.ternary)
@@ -94,11 +100,8 @@
   "and"
 ] @keyword.operator
 
-[ "case"
-  "datablock"
-  "default"
+[ "datablock"
   "new"
-  "package"
-  "switch"
-  "switch$"
-] @keyword
+] @keyword.type
+
+"package" @keyword

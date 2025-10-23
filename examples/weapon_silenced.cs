@@ -5,6 +5,7 @@
 datablock ItemData(SilencedGunItem : GunItem)
 {
 	//gui stuff
+	class = test;
 	uiName = "Silenced Gun";
 
 	doColorShift = true;
