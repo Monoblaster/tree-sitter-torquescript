@@ -1,33 +1,35 @@
 ; highlights.scm
-"*" @operator
-"/" @operator
-(binary_expression "%" @operator)
-"+" @operator
-"-" @operator
-"++" @operator
-"--" @operator
-"<" @operator
-">" @operator
-"<=" @operator
-">=" @operator
-"==" @operator
-"!=" @operator
-"!" @operator
-"&&" @operator
-"||" @operator
-"~" @operator
-"&" @operator
-"|" @operator
-"^" @operator
-"<<" @operator
-">>" @operator
-"@" @operator
-"NL" @operator
-"TAB" @operator
-"SPC" @operator
-"$=" @operator
-"!$=" @operator
-"=" @operator
+[ "*"
+  "/"
+  "%"
+  "$"
+  "+"
+  "-"
+  "++"
+  "--"
+  "<"
+  ">"
+  "<="
+  ">="
+  "=="
+  "!="
+  "!"
+  "&&"
+  "||"
+  "~"
+  "&"
+  "|"
+  "^"
+  "<<"
+  ">>"
+  "@"
+  "NL"
+  "TAB"
+  "SPC"
+  "$="
+  "!$="
+  "="
+] @operator
 
 (comment) @comment
 
@@ -49,15 +51,14 @@
 (parenthesized_variables (variable) @variable.parameter)
 (expression/variable) @variable
 (assignment_expression (variable) @variable)
-(variable "$" @operator) 
-(variable "%" @operator)
+
 (field name: (identifier) @property)
 (object_name) @string.special
-
 (number) @number
 
-(string) @string
-(tagged_string) @string
+[ (string)
+  (tagged_string)
+] @string
 
 (markup) @tag
 (tag) @tag
@@ -68,12 +69,11 @@
 (datablock name: (identifier) @type.definition)
 (datablock inherit: (identifier) @type)
 (field_block name: (identifier) @variable.member)
+(field_block name: [(class) (superclass) (classname)] @variable.builtin)
 
 [ (false)
  (true)
 ] @boolean
-
-(field_block name: [(class) (superclass) (classname)] @variable.builtin)
 
 "function" @keyword.function
 
@@ -94,8 +94,10 @@
   "default"
 ] @keyword.conditional
 
-(conditional "?" @keyword.conditional.ternary)
-(conditional ":" @keyword.conditional.ternary)
+(conditional 
+  [ "?"
+    ":"
+  ]@keyword.conditional.ternary)
 
 [ "or"
   "and"

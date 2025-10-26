@@ -177,7 +177,7 @@ module.exports = grammar({
     package: ($) =>
       seq(
         "package",
-        field("name", $.identifier),
+        field("name", alias($.identifier, $.object_name)),
         optional(seq("{", repeat($.function), "}", ";")),
       ),
 
@@ -323,7 +323,17 @@ module.exports = grammar({
       ),
 
     number: ($) =>
-      token(choice(/\d+/, /\d+\.\d+/, /\d+\.\d+E\-\d+/, /0x[0-9&&a-f]+/)),
+      token(
+        choice(
+          /\d+/,
+          /\d+\.\d+/,
+          /\d+\.\d+E[+-]\d+/,
+          /0x[0-9&&a-f]+/,
+          /inf/i,
+          /nan/i,
+          /-nan/i,
+        ),
+      ),
 
     grouping: ($) => seq("(", $.expression, ")"),
 

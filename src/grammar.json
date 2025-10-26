@@ -778,8 +778,13 @@
           "type": "FIELD",
           "name": "name",
           "content": {
-            "type": "SYMBOL",
-            "name": "identifier"
+            "type": "ALIAS",
+            "content": {
+              "type": "SYMBOL",
+              "name": "identifier"
+            },
+            "named": true,
+            "value": "object_name"
           }
         },
         {
@@ -2047,11 +2052,26 @@
           },
           {
             "type": "PATTERN",
-            "value": "\\d+\\.\\d+E\\-\\d+"
+            "value": "\\d+\\.\\d+E[+-]\\d+"
           },
           {
             "type": "PATTERN",
             "value": "0x[0-9&&a-f]+"
+          },
+          {
+            "type": "PATTERN",
+            "value": "inf",
+            "flags": "i"
+          },
+          {
+            "type": "PATTERN",
+            "value": "nan",
+            "flags": "i"
+          },
+          {
+            "type": "PATTERN",
+            "value": "-nan",
+            "flags": "i"
           }
         ]
       }

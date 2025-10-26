@@ -816,7 +816,7 @@
         "required": true,
         "types": [
           {
-            "type": "identifier",
+            "type": "object_name",
             "named": true
           }
         ]
